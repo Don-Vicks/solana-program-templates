@@ -1,5 +1,6 @@
 [toolchain]
 package_manager = "yarn"
+anchor_version = "0.32.1"
 
 [features]
 resolution = true
@@ -11,7 +12,7 @@ anchor_pda_validation = "6nmw28T92A1isdAqTtfeYPZybdjMkge8VLFiMJdHnkxd"
 anchor_reinitialization = "5RCjxGdhxajLEsxRRZtvtw4Qo2qmSbLLxP5xVHMigvJA"
 anchor_signer_check = "8tpnDKYbL9KSfdmWNrvpwPhdP7Y3TPth9meVDj95gRgb"
 anchor_type_cosplay = "443VtsgVs9WPmDcrZi6TBnwAmDbjUqGw1NxiCER3uuoo"
-pinocchio_comparison = "FEi7xXW24ecjuxz4TNoejMTNJXD91ev1Gkcm8GsiwFEM"
+
 
 
 [registry]
@@ -22,4 +23,4 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 \"tests/**/*.ts\""
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 \"tests/anchor-*.ts\""

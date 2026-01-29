@@ -10,7 +10,7 @@ import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets";
 import React, { useMemo } from "react";
 
 // Default styles that can be overridden by your app
-require("@solana/wallet-adapter-react-ui/styles.css");
+import "@solana/wallet-adapter-react-ui/styles.css";
 
 export default function AppWalletProvider({
   children,

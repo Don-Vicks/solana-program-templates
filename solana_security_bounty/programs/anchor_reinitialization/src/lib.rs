@@ -23,7 +23,7 @@ pub mod anchor_reinitialization {
         let dst: &mut [u8] = &mut data;
         let mut writer = std::io::Cursor::new(dst);
         
-        let discriminator = [1, 2, 3, 4, 5, 6, 7, 8]; // Fake discriminator for 'User'
+        let discriminator: [u8; 8] = [1, 2, 3, 4, 5, 6, 7, 8]; // Fake discriminator for 'User'
         
         use anchor_lang::AnchorSerialize;
         discriminator.serialize(&mut writer)?;

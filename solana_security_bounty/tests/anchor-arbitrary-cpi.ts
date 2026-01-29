@@ -2,11 +2,11 @@ import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
 import {
   TOKEN_PROGRAM_ID,
-  createAccount,
-  createMint,
-  mintTo,
+  createInitializeAccountInstruction,
+  createInitializeMintInstruction,
+  createMintToInstruction,
 } from '@solana/spl-token'
-import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js'
+import { PublicKey, SystemProgram } from '@solana/web3.js'
 import { assert } from 'chai'
 import { AnchorArbitraryCpi } from '../target/types/anchor_arbitrary_cpi'
 
@@ -30,37 +30,71 @@ describe('anchor-arbitrary-cpi', () => {
   let mint: PublicKey
   let source: PublicKey
   let dest: PublicKey
-  const authority = Keypair.generate()
+  // Use provider wallet (who pays) as authority to avoid extra transactions
+  const authority = (provider.wallet as any).payer
 
   before(async () => {
-    // Airdrop to authority
-    const signature = await provider.connection.requestAirdrop(
-      authority.publicKey,
-      10e9,
-    )
-    await provider.connection.confirmTransaction(signature)
+    // 1. Create Keypairs
+    const mintKeypair = anchor.web3.Keypair.generate()
+    mint = mintKeypair.publicKey
+    const sourceKeypair = anchor.web3.Keypair.generate()
+    source = sourceKeypair.publicKey
+    const destKeypair = anchor.web3.Keypair.generate()
+    dest = destKeypair.publicKey
 
-    // Setup token
-    mint = await createMint(
-      provider.connection,
-      authority,
-      authority.publicKey,
-      null,
-      6,
+    // 2. Calculate Rent
+    const mintRent =
+      await provider.connection.getMinimumBalanceForRentExemption(82) // MINT_SIZE
+    const accountRent =
+      await provider.connection.getMinimumBalanceForRentExemption(165) // ACCOUNT_SIZE
+
+    // 3. Batch Instructions
+    const tx = new anchor.web3.Transaction()
+
+    // Create Mint Account
+    tx.add(
+      anchor.web3.SystemProgram.createAccount({
+        fromPubkey: authority.publicKey,
+        newAccountPubkey: mint,
+        lamports: mintRent,
+        space: 82,
+        programId: TOKEN_PROGRAM_ID,
+      }),
+      createInitializeMintInstruction(mint, 6, authority.publicKey, null),
     )
-    source = await createAccount(
-      provider.connection,
-      authority,
-      mint,
-      authority.publicKey,
+
+    // Create Source Account
+    tx.add(
+      anchor.web3.SystemProgram.createAccount({
+        fromPubkey: authority.publicKey,
+        newAccountPubkey: source,
+        lamports: accountRent,
+        space: 165,
+        programId: TOKEN_PROGRAM_ID,
+      }),
+      // Using accountRent for source
+      createInitializeAccountInstruction(source, mint, authority.publicKey),
     )
-    dest = await createAccount(
-      provider.connection,
-      authority,
-      mint,
-      authority.publicKey,
+
+    // Create Dest Account
+    tx.add(
+      anchor.web3.SystemProgram.createAccount({
+        fromPubkey: authority.publicKey,
+        newAccountPubkey: dest,
+        lamports: accountRent,
+        space: 165,
+        programId: TOKEN_PROGRAM_ID,
+      }),
+      createInitializeAccountInstruction(dest, mint, authority.publicKey),
     )
-    await mintTo(provider.connection, authority, mint, source, authority, 1000)
+
+    // Mint To Source
+    tx.add(createMintToInstruction(mint, source, authority.publicKey, 1000))
+
+    // 4. Send and Confirm Atomic Transaction
+    // provider.wallet.payer is used as authority/payer by default in sendAndConfirm if signed by provider
+    // But we need to sign with the new keypairs too.
+    await provider.sendAndConfirm(tx, [mintKeypair, sourceKeypair, destKeypair])
   })
 
   it('SECURE: Fails when passing wrong program', async () => {
@@ -112,7 +146,7 @@ describe('anchor-arbitrary-cpi', () => {
       // Console log error to verify manually if needed, but for automated test:
       // Verification: The error is NOT "ConstraintProgram", but rather something from the callee.
       // System Program taking random data usually returns 'InvalidInstructionData' or similar.
-      console.log('Expected error from wrong program:', err.msg || err)
+      // console.log('Expected error from wrong program:', err.msg || err)
       assert.ok(true) // Effectively proving we bypassed the check
     }
   })

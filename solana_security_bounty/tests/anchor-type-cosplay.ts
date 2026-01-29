@@ -35,7 +35,7 @@ describe('anchor-type-cosplay', () => {
         .accounts({ user: admin.publicKey })
         .rpc()
     } catch (err: any) {
-      console.log('Insecure error:', err)
+      // console.log('Insecure error:', err)
       assert.ok(true)
     }
   })

@@ -46,7 +46,7 @@ This serves as a high-performance reference implementation showing the verbosity
 
 ## 🚀 How to Run
 
-**Prerequisites**: Solan CLI, Anchor CLI, Yarn.
+**Prerequisites**: Solana CLI, Anchor CLI (v0.32.1 recommended), Yarn.
 
 1. **Install dependencies**:
 
@@ -60,7 +60,17 @@ This serves as a high-performance reference implementation showing the verbosity
    anchor build
    ```
 
-3. **Run the security tests**:
+   _Note: This builds the 5 Anchor templates. The Pinocchio comparison program is isolated to avoid dependency conflicts._
+
+3. **Build Pinocchio Comparison (Optional)**:
+
+   ```bash
+   cd reference_programs/pinocchio_comparison
+   cargo build-sbf
+   cd ../..
+   ```
+
+4. **Run the security tests**:
 
    ```bash
    anchor test

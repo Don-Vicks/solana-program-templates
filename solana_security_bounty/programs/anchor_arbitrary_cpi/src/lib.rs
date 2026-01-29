@@ -19,7 +19,11 @@ pub mod anchor_arbitrary_cpi {
                 solana_program::instruction::AccountMeta::new(ctx.accounts.destination.key(), false),
                 solana_program::instruction::AccountMeta::new_readonly(ctx.accounts.authority.key(), true),
             ],
-            data: vec![3, amount.to_le_bytes().as_slice()].concat(), // Fake "Transfer" instruction data (3 is transfer in SPL Token)
+            data: {
+                let mut d = vec![3u8]; // 3 = Transfer
+                d.extend_from_slice(&amount.to_le_bytes());
+                d
+            },
         };
 
         solana_program::program::invoke(
@@ -81,6 +85,7 @@ pub struct CpiSecure<'info> {
     /// But typically we should use Account<'info, TokenAccount>. Keeping it simple for demo.
     pub source: UncheckedAccount<'info>,
     #[account(mut)]
+    /// CHECK: Recipient account
     pub destination: UncheckedAccount<'info>,
     pub authority: Signer<'info>,
     // SECURE: This ensures it IS the token program.
