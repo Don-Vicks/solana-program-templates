@@ -4,35 +4,121 @@ This repository contains **5 Solana programs** demonstrating common security vul
 
 Built for the **Superteam Nigeria Intermediate Developer Challenge**.
 
-## 🛡️ Vulnerability Templates
+## 🛡️ Vulnerability Deep-Dive
 
-Each template allows you to run a test exploit against the "insecure" instruction and verifies the fix in the "secure" instruction.
+Below is a detailed explanation of each vulnerability implemented in this repository, its implications, and how to fix it.
 
 ### 1. Missing Signer Check (`anchor_signer_check`)
 
-- **Vulnerability**: Creating an `update_admin` instruction that accepts an `admin` account but fails to verify it signed the transaction. Anyone can pass the admin's public key (address) to valid the key check, but without the private key signature.
-- **Fix**: Use Anchor's `Signer<'info>` type instead of `UncheckedAccount` or `Account`. Anchor (and the runtime) guarantees that any account marked as `Signer` has signed the transaction.
-- **Pinocchio Equivalent**: You must explicitly check `assert!(account.is_signer())`.
+**The Vulnerability:**
+In Solana, simply passing an account's public key to a program does **not** prove ownership or authorization. A program can read any account's data. A "Missing Signer Check" occurs when an instruction performs a privileged action (like changing an admin) based solely on the presence of an account, without verifying that the account holder signed the transaction.
+
+**The Implication:**
+If an instruction `update_admin(new_admin)` takes an `current_admin` account but doesn't check if it's a signer, **attacker** can call this instruction passing the _real_ admin's public key (which is public knowledge). The program sees the correct address and proceeds, allowing the hacker to seize control of the protocol without the real admin's private key.
+
+**Secure Pattern:**
+Use Anchor's `Signer<'info>` type wrapper.
+
+```rust
+// INSECURE
+pub admin: UncheckedAccount<'info>, // No check that admin signed!
+
+// SECURE
+pub admin: Signer<'info>, // Anchor enforces account.is_signer == true
+```
+
+---
 
 ### 2. Arbitrary CPI (`anchor_arbitrary_cpi`)
 
-- **Vulnerability**: Invoking a Cross-Program Invocation (CPI) to a program passed by the user without validating the program ID. An attacker can pass a malicious program (or System Program) in place of the Token Program.
-- **Fix**: Use Anchor's `Program<'info, Token>` wrapper. It explicitly validates that `token_program.key() == token::ID`.
+**The Vulnerability:**
+Cross-Program Invocations (CPIs) allow programs to call other programs (e.g., calling the Token Program to transfer tokens). An "Arbitrary CPI" vulnerability exists when a program invokes an instruction on a program ID passed by the user without verifying it.
+
+**The Implication:**
+An attacker can pass a malicious program (or essentially any other program like the System Program) in place of the expected SPL Token Program. If your program calls `token::transfer` on this malicious program, the malicious program can succeed (do nothing) or behave unexpectedly. More critically, if you are relying on the _result_ of that CPI (e.g., "I burned 10 tokens, so now give me 10 SOL"), using a fake program allows the attacker to bypass the cost (burning nothing) and steal the reward.
+
+**Secure Pattern:**
+Use Anchor's `Program<'info, Token>` wrapper.
+
+```rust
+// INSECURE
+pub token_program: UncheckedAccount<'info>, // Could be any program!
+
+// SECURE
+pub token_program: Program<'info, Token>, // Checks key == standard Token Program ID
+```
+
+---
 
 ### 3. Type Cosplay / Discriminator Mismatch (`anchor_type_cosplay`)
 
-- **Vulnerability**: Manually deserializing account data (e.g., using `try_from_slice`) without checking the 8-byte Anchor discriminator. This allows an attacker to pass an account of type `Admin` (valid data) where `User` was expected, potentially leading to privilege escalation if fields align.
-- **Fix**: Always use `Account<'info, User>`. Anchor automatically checks the discriminator matches the `User` struct type.
+**The Vulnerability:**
+Solana accounts are just byte arrays. Anchor solves this by adding an 8-byte "discriminator" (hash of the struct name) to the start of the account data. "Type Cosplay" happens when a program deserializes account data entirely manually (e.g., trying to read raw bytes as a specific struct) without checking this discriminator.
+
+**The Implication:**
+If you have a `User` struct and an `Admin` struct that happen to have similar byte layouts (e.g., both start with a `u64` balance), an attacker can create a `User` account and pass it to an instruction expecting an `Admin`. If the program only reads the bytes without checking _what_ type of account it is, it might interpret the `User`'s data as `Admin` data. This allows an attacker to "cosplay" as an admin using a regular user account.
+
+**Secure Pattern:**
+Always use standard Anchor accounts, which check the discriminator automatically.
+
+```rust
+// INSECURE
+// Manually parsing bytes without checking discriminator (unsafe)
+
+// SECURE
+pub user: Account<'info, User>, // Anchor verifies the 8-byte discriminator matches "User"
+```
+
+---
 
 ### 4. PDA Validation (`anchor_pda_validation`)
 
-- **Vulnerability**: Using `Account<'info, Pool>` without `seeds` constraints. This verifies the account is indeed a `Pool` owned by the program, but ANY valid Pool. An attacker can create a _fake_ Pool (initialized on a different address) and trick the program into using it.
-- **Fix**: Use `#[account(seeds = [b"pool"], bump)]`. This forces the account to be the specific PDA derived from those seeds.
+**The Vulnerability:**
+Program Derived Addresses (PDAs) are essential for deterministic account ownership (e.g., a "Pool" belonging to specific "Mint"). Vulnerability arises when an account accepts a generic account (like `Account<'info, Pool>`) but does not constrain _which_ Pool it is via seeds.
+
+**The Implication:**
+Without seed validation, the program checks "Is this account owned by me?" and "Is it a Pool?". Both are true for _any_ Pool created by the program. An attacker can create their _own_ Pool (where they are the admin) and pass it to a global function. The program thinks it's interacting with the official protocol Pool, allowing the attacker to drain funds or corrupt state using their fake Pool.
+
+**Secure Pattern:**
+Enforce PDA derivation using `seeds`.
+
+```rust
+// INSECURE
+#[account]
+pub pool: Account<'info, Pool>, // Any pool works
+
+// SECURE
+#[account(
+    seeds = [b"pool"], // Must be THE pool derived from these exact seeds
+    bump
+)]
+pub pool: Account<'info, Pool>,
+```
+
+---
 
 ### 5. Re-initialization (`anchor_reinitialization`)
 
-- **Vulnerability**: writing to an account (via `UncheckedAccount` or `mut`) with an "initialize" function that doesn't check if the account is already initialized. Calling it twice overwrites data.
-- **Fix**: Use `#[account(init, ...)]`. Anchor ensures the account is strictly new (owned by System Program / uninitialized).
+**The Vulnerability:**
+On Solana, accounts are permanent until closed. A "Re-initialization" attack occurs when an instruction meant to `initialize` an account (set initial state) can be called on an account that has _already_ been initialized.
+
+**The Implication:**
+If an attacker can call `initialize` again on an active account, they can reset its data. For example, they could reset a "Token Vault" balance to 0, or overwrite the "Owner" field of a multisig wallet to their own public key. This effectively allows complete takeover or destruction of the account's state.
+
+**Secure Pattern:**
+Use the `init` constraint, which fails if the account strictly already exists/has a discriminator.
+
+```rust
+// INSECURE
+#[account(mut)]
+pub user: Account<'info, User>, // Can calculate fields and overwrite existing data
+
+// SECURE
+#[account(init, payer = authority, space = ...)]
+pub user: Account<'info, User>, // Fails if account already has a defined discriminator
+```
+
+---
 
 ## 🧩 Pinocchio Comparison
 
