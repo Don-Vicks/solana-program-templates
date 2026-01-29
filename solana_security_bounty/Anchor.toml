@@ -1,19 +1,17 @@
 [toolchain]
-package_manager = "yarn"
 anchor_version = "0.32.1"
+package_manager = "yarn"
 
 [features]
 resolution = true
 skip-lint = false
 
 [programs.localnet]
-anchor_arbitrary_cpi = "6SFE4yeHZVRb89ZADeLHQjKoe7oCRkR3sdeccxEhzJ4T"
-anchor_pda_validation = "6nmw28T92A1isdAqTtfeYPZybdjMkge8VLFiMJdHnkxd"
-anchor_reinitialization = "5RCjxGdhxajLEsxRRZtvtw4Qo2qmSbLLxP5xVHMigvJA"
-anchor_signer_check = "8tpnDKYbL9KSfdmWNrvpwPhdP7Y3TPth9meVDj95gRgb"
-anchor_type_cosplay = "443VtsgVs9WPmDcrZi6TBnwAmDbjUqGw1NxiCER3uuoo"
-
-
+anchor_arbitrary_cpi = "79F2iKGQy1QqvVVVGohwpLy4XVRtNfzYjvnrD4T6Cb1e"
+anchor_pda_validation = "3vrTAijwUWFYo4STMGJRC3Xr7TjdJhqwCkRMnkVyG7at"
+anchor_reinitialization = "8tWvwysVozpvXRYJDngfiGw1HpgcNVZYx3T8ozeAWs2Q"
+anchor_signer_check = "wxvuHwcvLZGSAif8yoESUvmWnrWQDMGxAagrHRrXWFF"
+anchor_type_cosplay = "J1YBzyxJAVp7fYMAirDCsxjWZXUW798pCaxWv6dYJpup"
 
 [registry]
 url = "https://api.apr.dev"

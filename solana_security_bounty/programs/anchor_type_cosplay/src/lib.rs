@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use std::mem::size_of;
 
-declare_id!("443VtsgVs9WPmDcrZi6TBnwAmDbjUqGw1NxiCER3uuoo");
+declare_id!("J1YBzyxJAVp7fYMAirDCsxjWZXUW798pCaxWv6dYJpup");
 
 #[program]
 pub mod anchor_type_cosplay {

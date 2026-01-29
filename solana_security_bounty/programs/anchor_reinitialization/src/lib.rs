@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("5RCjxGdhxajLEsxRRZtvtw4Qo2qmSbLLxP5xVHMigvJA");
+declare_id!("8tWvwysVozpvXRYJDngfiGw1HpgcNVZYx3T8ozeAWs2Q");
 
 #[program]
 pub mod anchor_reinitialization {

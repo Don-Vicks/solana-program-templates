@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
 
-declare_id!("6SFE4yeHZVRb89ZADeLHQjKoe7oCRkR3sdeccxEhzJ4T");
+declare_id!("79F2iKGQy1QqvVVVGohwpLy4XVRtNfzYjvnrD4T6Cb1e");
 
 #[program]
 pub mod anchor_arbitrary_cpi {

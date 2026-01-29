@@ -185,7 +185,7 @@ A Next.js frontend is included to demonstrate the vulnerabilities interactively.
 
 3. **Open browser**:
    Visit `http://localhost:3000`. You can connect your wallet (configured for Localnet/Devnet) and toggle between "Vulnerable" and "Secure" modes for each template.
-   _(Note: The frontend interactions currently mock the network calls until you successfully run `anchor build` to generate the IDLs)_.
+   _Note: Ensure `solana-test-validator` is running and `anchor deploy` has been executed._
 
 ---
 

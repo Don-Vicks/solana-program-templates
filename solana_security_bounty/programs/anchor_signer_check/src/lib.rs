@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("8tpnDKYbL9KSfdmWNrvpwPhdP7Y3TPth9meVDj95gRgb");
+declare_id!("wxvuHwcvLZGSAif8yoESUvmWnrWQDMGxAagrHRrXWFF");
 
 #[program]
 pub mod anchor_signer_check {

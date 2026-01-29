@@ -4,6 +4,7 @@ import { AlertTriangle, Fingerprint, Lock, RefreshCw, Shield } from "lucide-reac
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import VulnerabilityCard from "../components/VulnerabilityCard";
+import { useSecurityPrograms } from "../hooks/useSecurityPrograms";
 
 // Dynamically import WalletButton to avoid SSR issues
 const WalletMultiButton = dynamic(
@@ -22,17 +23,24 @@ export default function Home() {
     { name: "Re-initialization", icon: <RefreshCw className="w-4 h-4" /> },
   ];
 
-  // Placeholder actions for demo purposes (since we lack IDL build artifacts currently)
-  const mockAction = async (log: (msg: string) => void, actionName: string) => {
-    log(`Initiating ${actionName}...`);
+  /* -------------------------------------------------------------
+     REAL ACTIONS using `useSecurityPrograms` hook
+     ------------------------------------------------------------- */
+  const {
+    exploitSignerCheck, secureSignerCheck,
+    exploitArbitraryCpi, secureArbitraryCpi,
+    exploitTypeCosplay, secureTypeCosplay,
+    exploitPdaValidation, securePdaValidation,
+    exploitReinitialization, secureReinitialization
+  } = useSecurityPrograms();
+
+  const handleAction = async (
+    log: (msg: string) => void,
+    action: (log: (msg: string) => void) => Promise<void>
+  ) => {
     log("Checking wallet connection...");
-    await new Promise((r) => setTimeout(r, 1000));
-    log("Constructing transaction...");
-    await new Promise((r) => setTimeout(r, 800));
-    log("Simulating signature request...");
-    await new Promise((r) => setTimeout(r, 1200));
-    log("✅ Transaction confirmed (Mock)");
-    log("Note: Run 'anchor build' to generate IDLs for real interaction.");
+    // Assuming hook handles wallet check or error
+    await action(log);
   };
 
   return (
@@ -86,8 +94,8 @@ export default function Home() {
               description="A function updates a critical authority but fails to check if the new authority signed the transaction."
               vulnerableDescription="The 'update_admin_insecure' instruction only checks if the 'admin' account key matches the config, but ignores whether it's a signer."
               secureDescription="The 'update_admin_secure' instruction uses Anchor's Signer type, enforcing that the transaction was signed by the private key."
-              vulnerableAction={(log) => mockAction(log, "Exploit: Update Admin without Signature")}
-              secureAction={(log) => mockAction(log, "Secure Update Admin")}
+              vulnerableAction={(log) => handleAction(log, exploitSignerCheck)}
+              secureAction={(log) => handleAction(log, secureSignerCheck)}
             />
           )}
 
@@ -97,8 +105,8 @@ export default function Home() {
               description="Invoking another program without verifying its Program ID allows attackers to substitute malicious programs."
               vulnerableDescription="The 'cpi_insecure' instruction accepts any account as 'token_program', allowing calls to fake token programs."
               secureDescription="The 'cpi_secure' instruction uses Anchor's Program<'info, Token> wrapper to strictly validate the program ID."
-              vulnerableAction={(log) => mockAction(log, "Exploit: Call Fake Token Program")}
-              secureAction={(log) => mockAction(log, "Secure CPI Call")}
+              vulnerableAction={(log) => handleAction(log, exploitArbitraryCpi)}
+              secureAction={(log) => handleAction(log, secureArbitraryCpi)}
             />
           )}
 
@@ -108,8 +116,8 @@ export default function Home() {
               description="Treating one account type as another because they share a similar data layout."
               vulnerableDescription="The 'cosplay_insecure' instruction manually deserializes account data without checking the Anchor discriminator."
               secureDescription="The 'cosplay_secure' instruction uses Account<'info, User>, which automatically verifies the 8-byte discriminator."
-              vulnerableAction={(log) => mockAction(log, "Exploit: Pass Admin as User")}
-              secureAction={(log) => mockAction(log, "Secure Type Check")}
+              vulnerableAction={(log) => handleAction(log, exploitTypeCosplay)}
+              secureAction={(log) => handleAction(log, secureTypeCosplay)}
             />
           )}
 
@@ -119,8 +127,8 @@ export default function Home() {
               description="Failing to validate that a PDA account was derived from the expected seeds."
               vulnerableDescription="The 'deposit_insecure' instruction accepts any 'Pool' account, allowing attackers to supply their own fake pool."
               secureDescription="The 'deposit_secure' instruction uses the 'seeds' constraint to enforce the exact PDA address derivation."
-              vulnerableAction={(log) => mockAction(log, "Exploit: Deposit to Fake Pool")}
-              secureAction={(log) => mockAction(log, "Secure Deposit")}
+              vulnerableAction={(log) => handleAction(log, exploitPdaValidation)}
+              secureAction={(log) => handleAction(log, securePdaValidation)}
             />
           )}
 
@@ -130,8 +138,8 @@ export default function Home() {
               description="Initializing an account without checking if it has already been initialized."
               vulnerableDescription="The 'initialize_insecure' instruction blindly writes data to the account, allowing overwrites."
               secureDescription="The 'initialize_secure' instruction uses the 'init' constraint to ensure the account is fresh."
-              vulnerableAction={(log) => mockAction(log, "Exploit: Overwrite Existing Account")}
-              secureAction={(log) => mockAction(log, "Secure Initialization")}
+              vulnerableAction={(log) => handleAction(log, exploitReinitialization)}
+              secureAction={(log) => handleAction(log, secureReinitialization)}
             />
           )}
         </div>
