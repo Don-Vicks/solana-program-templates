@@ -167,26 +167,6 @@ This serves as a high-performance reference implementation showing the verbosity
    - **Pass** explicitly when exploiting the vulnerable instruction (proving the bug).
    - **Fail** (via expected error) when attacking the secure instruction (proving the fix).
 
-### 🖥️ Frontend Dashboard
-
-A Next.js frontend is included to demonstrate the vulnerabilities interactively.
-
-1. **Navigate to app directory**:
-
-   ```bash
-   cd app
-   ```
-
-2. **Run the development server**:
-
-   ```bash
-   yarn dev
-   ```
-
-3. **Open browser**:
-   Visit `http://localhost:3000`. You can connect your wallet (configured for Localnet/Devnet) and toggle between "Vulnerable" and "Secure" modes for each template.
-   _Note: Ensure `solana-test-validator` is running and `anchor deploy` has been executed._
-
 ---
 
 _Note: If build fails due to network issues (Rust toolchain download), please ensure you have a stable internet connection and try `anchor build` again._
