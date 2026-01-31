@@ -1,6 +1,6 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
-import { PublicKey, SystemProgram } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { expect } from 'chai'
 import { OracleManipulation } from '../target/types/oracle_manipulation'
 
@@ -34,10 +34,7 @@ describe('Oracle Manipulation (Mango-Style)', () => {
     await program.methods
       .initialize()
       .accounts({
-        lendingPool: lendingPoolPda,
-        oracle: oraclePda,
         authority: authority.publicKey,
-        systemProgram: SystemProgram.programId,
       })
       .rpc()
 
@@ -45,10 +42,7 @@ describe('Oracle Manipulation (Mango-Style)', () => {
     await program.methods
       .depositCollateral(new anchor.BN(1000))
       .accounts({
-        lendingPool: lendingPoolPda,
-        userPosition: userPositionPda,
         user: authority.publicKey,
-        systemProgram: SystemProgram.programId,
       })
       .rpc()
 
@@ -64,7 +58,6 @@ describe('Oracle Manipulation (Mango-Style)', () => {
           new anchor.BN(50), // High confidence spread (suspicious!)
         )
         .accounts({
-          oracle: oraclePda,
           authority: authority.publicKey,
         })
         .rpc()
@@ -76,9 +69,6 @@ describe('Oracle Manipulation (Mango-Style)', () => {
       await program.methods
         .borrowInsecure(borrowAmount)
         .accounts({
-          lendingPool: lendingPoolPda,
-          oracle: oraclePda,
-          userPosition: userPositionPda,
           user: authority.publicKey,
         })
         .rpc()
@@ -95,7 +85,6 @@ describe('Oracle Manipulation (Mango-Style)', () => {
       await program.methods
         .updateOracle(new anchor.BN(100), new anchor.BN(1))
         .accounts({
-          oracle: oraclePda,
           authority: authority.publicKey,
         })
         .rpc()
@@ -116,7 +105,6 @@ describe('Oracle Manipulation (Mango-Style)', () => {
           new anchor.BN(50), // 50% confidence = very uncertain/manipulated
         )
         .accounts({
-          oracle: oraclePda,
           authority: authority.publicKey,
         })
         .rpc()
@@ -125,9 +113,6 @@ describe('Oracle Manipulation (Mango-Style)', () => {
         await program.methods
           .borrowSecure(new anchor.BN(1000))
           .accounts({
-            lendingPool: lendingPoolPda,
-            oracle: oraclePda,
-            userPosition: userPositionPda,
             user: authority.publicKey,
           })
           .rpc()
@@ -147,7 +132,6 @@ describe('Oracle Manipulation (Mango-Style)', () => {
           new anchor.BN(0), // High confidence (0 = exact)
         )
         .accounts({
-          oracle: oraclePda,
           authority: authority.publicKey,
         })
         .rpc()
@@ -157,9 +141,6 @@ describe('Oracle Manipulation (Mango-Style)', () => {
       await program.methods
         .borrowSecure(new anchor.BN(8_000))
         .accounts({
-          lendingPool: lendingPoolPda,
-          oracle: oraclePda,
-          userPosition: userPositionPda,
           user: authority.publicKey,
         })
         .rpc()

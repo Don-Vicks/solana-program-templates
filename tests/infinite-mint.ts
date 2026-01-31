@@ -1,13 +1,12 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
 import {
-  TOKEN_PROGRAM_ID,
   createAccount,
   createMint,
   getAccount,
   mintTo,
 } from '@solana/spl-token'
-import { PublicKey, SystemProgram } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { expect } from 'chai'
 import { InfiniteMint } from '../target/types/infinite_mint'
 
@@ -106,11 +105,8 @@ describe('Infinite Mint (Cashio-Style)', () => {
     await program.methods
       .initialize(approvedCollateralMint)
       .accounts({
-        config: configPda,
         stablecoinMint: stablecoinMint,
         authority: authority.publicKey,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc()
   })
@@ -123,12 +119,10 @@ describe('Infinite Mint (Cashio-Style)', () => {
       await program.methods
         .mintInsecure(mintAmount)
         .accounts({
-          config: configPda,
           userCollateral: userFakeCollateralAccount, // FAKE TOKEN!
           stablecoinMint: stablecoinMint,
           userStablecoin: userStablecoinAccount,
           user: authority.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
         })
         .rpc()
 
@@ -151,12 +145,10 @@ describe('Infinite Mint (Cashio-Style)', () => {
         await program.methods
           .mintSecure(mintAmount)
           .accounts({
-            config: configPda,
             userCollateral: userFakeCollateralAccount, // FAKE TOKEN!
             stablecoinMint: stablecoinMint,
             userStablecoin: userStablecoinAccount,
             user: authority.publicKey,
-            tokenProgram: TOKEN_PROGRAM_ID,
           })
           .rpc()
 
@@ -173,12 +165,10 @@ describe('Infinite Mint (Cashio-Style)', () => {
       await program.methods
         .mintSecure(mintAmount)
         .accounts({
-          config: configPda,
           userCollateral: userApprovedCollateralAccount, // REAL collateral
           stablecoinMint: stablecoinMint,
           userStablecoin: userStablecoinAccount,
           user: authority.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
         })
         .rpc()
 

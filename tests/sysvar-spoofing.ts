@@ -29,9 +29,7 @@ describe('Sysvar Spoofing (Wormhole-Style)', () => {
     await program.methods
       .initialize()
       .accounts({
-        bridge: bridgePda,
         authority: authority.publicKey,
-        systemProgram: SystemProgram.programId,
       })
       .rpc()
 
@@ -70,7 +68,6 @@ describe('Sysvar Spoofing (Wormhole-Style)', () => {
         await program.methods
           .verifyAndMintInsecure(new anchor.BN(120_000))
           .accounts({
-            bridge: bridgePda,
             instructions: fakeInstructionAccount.publicKey, // FAKE!
             user: authority.publicKey,
           })
@@ -94,7 +91,6 @@ describe('Sysvar Spoofing (Wormhole-Style)', () => {
         await program.methods
           .verifyAndMintSecure(new anchor.BN(120_000))
           .accounts({
-            bridge: bridgePda,
             instructions: fakeInstructionAccount.publicKey, // FAKE!
             user: authority.publicKey,
           })
@@ -113,7 +109,6 @@ describe('Sysvar Spoofing (Wormhole-Style)', () => {
         await program.methods
           .verifyAndMintSecure(new anchor.BN(1_000))
           .accounts({
-            bridge: bridgePda,
             instructions: SYSVAR_INSTRUCTIONS_PUBKEY, // REAL sysvar
             user: authority.publicKey,
           })

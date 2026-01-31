@@ -23,9 +23,7 @@ describe('Reentrancy CPI (Crema-Style)', () => {
     await program.methods
       .initialize(new anchor.BN(10_000))
       .accounts({
-        pool: poolPda,
         authority: authority.publicKey,
-        systemProgram: SystemProgram.programId,
       })
       .rpc()
 
@@ -42,7 +40,6 @@ describe('Reentrancy CPI (Crema-Style)', () => {
       await program.methods
         .swapInsecure(amountIn)
         .accounts({
-          pool: poolPda,
           callbackProgram: SystemProgram.programId, // Simulated callback
           user: authority.publicKey,
         })
@@ -64,7 +61,6 @@ describe('Reentrancy CPI (Crema-Style)', () => {
       await program.methods
         .swapSecure(amountIn)
         .accounts({
-          pool: poolPda,
           callbackProgram: SystemProgram.programId,
           user: authority.publicKey,
         })
@@ -87,7 +83,6 @@ describe('Reentrancy CPI (Crema-Style)', () => {
       await program.methods
         .swapSecure(amountIn)
         .accounts({
-          pool: poolPda,
           callbackProgram: SystemProgram.programId,
           user: authority.publicKey,
         })

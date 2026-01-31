@@ -1,6 +1,6 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
-import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js'
+import { Keypair, PublicKey } from '@solana/web3.js'
 import { expect } from 'chai'
 import { AccessControl } from '../target/types/access_control'
 
@@ -24,9 +24,7 @@ describe('Access Control (Raydium-Style)', () => {
     await program.methods
       .initialize()
       .accounts({
-        vault: vaultPda,
         admin: admin.publicKey,
-        systemProgram: SystemProgram.programId,
       })
       .rpc()
 
@@ -34,7 +32,6 @@ describe('Access Control (Raydium-Style)', () => {
     await program.methods
       .deposit(new anchor.BN(100_000))
       .accounts({
-        vault: vaultPda,
         depositor: admin.publicKey,
       })
       .rpc()
@@ -51,7 +48,6 @@ describe('Access Control (Raydium-Style)', () => {
       await program.methods
         .withdrawInsecure(withdrawAmount)
         .accounts({
-          vault: vaultPda,
           signer: admin.publicKey,
         })
         .rpc()
@@ -70,7 +66,6 @@ describe('Access Control (Raydium-Style)', () => {
         await program.methods
           .withdrawInsecure(new anchor.BN(1_000))
           .accounts({
-            vault: vaultPda,
             signer: attacker.publicKey,
           })
           .signers([attacker])
@@ -94,7 +89,6 @@ describe('Access Control (Raydium-Style)', () => {
       await program.methods
         .initiateWithdrawalSecure(withdrawAmount, recipient)
         .accounts({
-          vault: vaultPda,
           signer: admin.publicKey,
         })
         .rpc()
@@ -108,12 +102,7 @@ describe('Access Control (Raydium-Style)', () => {
 
     it('Step 2: Cannot execute before timelock expires', async () => {
       try {
-        await program.methods
-          .executeWithdrawalSecure()
-          .accounts({
-            vault: vaultPda,
-          })
-          .rpc()
+        await program.methods.executeWithdrawalSecure().rpc()
 
         expect.fail('Should not execute before timelock')
       } catch (err) {
@@ -126,7 +115,6 @@ describe('Access Control (Raydium-Style)', () => {
       await program.methods
         .cancelWithdrawalSecure()
         .accounts({
-          vault: vaultPda,
           signer: admin.publicKey,
         })
         .rpc()
