@@ -7,11 +7,11 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-anchor_arbitrary_cpi = "79F2iKGQy1QqvVVVGohwpLy4XVRtNfzYjvnrD4T6Cb1e"
-anchor_pda_validation = "3vrTAijwUWFYo4STMGJRC3Xr7TjdJhqwCkRMnkVyG7at"
-anchor_reinitialization = "8tWvwysVozpvXRYJDngfiGw1HpgcNVZYx3T8ozeAWs2Q"
-anchor_signer_check = "wxvuHwcvLZGSAif8yoESUvmWnrWQDMGxAagrHRrXWFF"
-anchor_type_cosplay = "J1YBzyxJAVp7fYMAirDCsxjWZXUW798pCaxWv6dYJpup"
+access_control = "C1F588QckYcMirCMzfEzWEYt8jucWk6MeQSgpi2re5gk"
+infinite_mint = "7V2wxk3ZiYucgihoJ7GqBA5rJZmSin1Qp8MV2yKXuUMf"
+oracle_manipulation = "76AF6gaYLoTANVHFHtEiLAsxaXLYzhMRspQE1f8C4Pyd"
+reentrancy_cpi = "Adrnw2U3aWSws16yAt9nrCsGaRXaDDbKvVzhhahSyfTe"
+sysvar_spoofing = "ocPDubsmZoeEE7LiiDiFJvp16ifeqNjNScLDHEkjB9p"
 
 [registry]
 url = "https://api.apr.dev"
@@ -21,4 +21,4 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 \"tests/anchor-*.ts\""
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 \"tests/*.ts\""
