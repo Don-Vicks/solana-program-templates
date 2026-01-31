@@ -1,6 +1,12 @@
 # Anatomy of $500M in Solana Exploits: A Deep-Dive Security Analysis
 
-> **Writing Anchor code doesn't automatically guarantee safety.** This repository recreates 5 real-world Solana exploits to teach you what went wrong and how to prevent it.
+> **"Those who fail to learn from history are doomed to repeat it."** — George Santayana
+
+The Solana ecosystem lost over $500 million in 2022 to preventable exploits. Not sophisticated zero-days. Not cryptographic breaks. Simple programming mistakes that frameworks like Anchor didn't catch because **they were never designed to**.
+
+This repository recreates 5 of the most devastating Solana exploits—not as hypothetical examples, but as faithful reproductions of real bugs that cost real money. Each template contains the vulnerable code, the secure fix, and detailed explanations of what went wrong.
+
+**The goal is simple: learn from real disasters, not documentation.**
 
 ---
 
